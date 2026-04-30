@@ -104,7 +104,10 @@ class TradeRecord(Base):
 
 # ── Engine & Session ──
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_size=10, max_overflow=20)
+# SQLite uses SingletonThreadPool which rejects pool_size/max_overflow; only
+# pass those tunables to real connection-pool dialects (Postgres, MySQL).
+_pool_kwargs = {} if DATABASE_URL.startswith("sqlite") else {"pool_size": 10, "max_overflow": 20}
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, **_pool_kwargs)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
