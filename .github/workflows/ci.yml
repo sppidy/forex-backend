@@ -19,8 +19,11 @@ jobs:
           pip install -r requirements.txt
       - name: Compile-check all modules
         run: python -m compileall -q .
-      - name: Import core modules
+      - name: Import users module (validates SQLAlchemy engine config)
         env:
           DATABASE_URL: "sqlite:///:memory:"
         run: |
-          python -c "import users; import api_server; import autopilot_runner"
+          python -c "import users"
+        # api_server / autopilot_runner are NOT imported here — they pull in
+        # forex-agent's `config` module via the production AGENT_DIR pattern,
+        # which isn't checked out in this isolated sub-repo CI.
